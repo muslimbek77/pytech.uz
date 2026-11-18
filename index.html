@@ -13,7 +13,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#" aria-label="Career Compass boş sahifa"><span class="brand-mark">✳</span><span>career<span class="brand-dot">.</span>pyteç</span></a>
+    <a class="brand" href="#" aria-label="Pytech boş sahifa"><span class="brand-mark">✳</span><span>career<span class="brand-dot">.</span>pytech</span></a>
     <div class="top-note"><span class="live-dot"></span> Raqamli kelajagingiz şu yerdan boşlanadi</div>
     <a class="top-link" href="#how">Test qanday işlaydi <span>↗</span></a>
   </header>
@@ -57,6 +57,15 @@
     <section class="results-view hidden" id="resultsView">
       <div class="results-head"><div><div class="eyebrow">SIZNING NATIJANGIZ</div><h2>Sizga mos <em>kasblar.</em></h2><p>Javoblaringiz asosida 20 ta raqamli kasb moslik darajasi böyiça saralandi.</p></div><div class="result-stamp"><span>✦</span><b>P Y T E C H<br>KASB TANLOVI</b></div></div>
       <div class="results-grid"><div class="ranking-panel"><div class="panel-top"><span>MOS KASBLAR</span><span>MOSLIK</span></div><div id="resultsList"></div></div><aside class="insight-panel"><div class="insight-icon">✳</div><div class="eyebrow muted">SIZ UÇUN</div><h3 id="insightTitle">Ajoyib boşlaniş!</h3><p id="insightText">Natijangizga qarab örganişni boşlang.</p><div class="insight-divider"></div><div class="insight-note"><span>⌁</span><p>Uydan yoki moslaşuvçan vaqtda işlaş imkoniyati kasb va iş beruvçiga qarab farq qiladi. Har bir yönalişni kiçik loyiha bilan sinab köring.</p></div><button class="primary-btn full-btn" id="restartBtn">Testni qayta işlaş <span>↻</span></button></aside></div>
+      <section class="certificate-panel" aria-labelledby="certificateHeading">
+        <div class="certificate-intro"><div class="certificate-icon">✧</div><div><div class="eyebrow muted">SIZ UÇUN SOVĞA</div><h3 id="certificateHeading">Natijangizni sertifikat bilan saqlang</h3><p>Ism-familiyangizni kiriting. Sizga mos kasblar ko‘rsatilgan sertifikat tayyorlab beriladi.</p></div></div>
+        <form class="certificate-form" id="certificateForm">
+          <label for="participantName">Ism va familiya</label>
+          <div class="certificate-controls"><input id="participantName" name="participantName" type="text" autocomplete="name" maxlength="70" placeholder="Masalan: Dilnoza Karimova" required><button class="primary-btn" type="submit">PNG sertifikatni yuklab olish <span>↓</span></button></div>
+          <p class="certificate-privacy">Ismingiz faqat sertifikat yaratish uchun ishlatiladi, saqlanmaydi.</p>
+          <p class="certificate-status" id="certificateStatus" role="status" aria-live="polite"></p>
+        </form>
+      </section>
     </section>
   </main>
   <footer><a class="brand" href="#"><span class="brand-mark">✳</span><span>career<span class="brand-dot">.</span>pytech</span></a><span>Kelajagingizni özingiz tanlang.</span><span>© 2026 Pytech</span></footer>

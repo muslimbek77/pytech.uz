@@ -1,6 +1,6 @@
 # Pytech kasb yönalişi testi
 
-`career.pytech.uz` uçun röyxatdan ötiş talab qilinmaydigan, 2026-yilgi özbek lotin alifbosidagi raqamli kasb tanlaş sahifasi. Unda 15 ta savol va 20 ta kasb yönalişi bor.
+`career.pytech.uz` uçun röyxatdan ötiş talab qilinmaydigan, 2026-yilgi özbek lotin alifbosidagi raqamli kasb tanlaş sahifasi. Unda 15 ta savol, 20 ta kasb yönalişi va ism-familiya bilan PNG sertifikat yuklab oliş imkoniyati bor.
 
 ## Işga tuşiriş
 

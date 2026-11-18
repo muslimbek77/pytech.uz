@@ -44,6 +44,7 @@ const questions = [
 
 let current = 0;
 let answers = Array(questions.length).fill(null);
+let latestRanked = [];
 const $ = (id) => document.getElementById(id);
 const hero = document.querySelector('.hero');
 const how = document.querySelector('.how');
@@ -82,6 +83,7 @@ function showResults() {
     const possible = questions.reduce((total,question) => total + Math.max(...question.options.map(option => option.scores[role.id] || 0)),0);
     return {...role,percent:possible ? Math.round(points[role.id]/possible*100) : 0};
   }).sort((a,b)=>b.percent-a.percent);
+  latestRanked = ranked;
   $('resultsList').replaceChildren(...ranked.map((role,index) => {
     const row=document.createElement('div');row.className='result-row';
     row.innerHTML=`<span class="rank-num">${String(index+1).padStart(2,'0')}</span><span class="role-icon">${role.icon}</span><span><span class="role-name">${role.name}</span><span class="role-desc">${role.desc}</span></span><span class="role-meter"><i style="width:${role.percent}%"></i></span><span class="role-percent">${role.percent}%</span>`;
@@ -96,3 +98,95 @@ $('startBtn').addEventListener('click',showQuiz);
 $('backBtn').addEventListener('click',()=>{if(current>0){current--;renderQuestion()}});
 $('exitBtn').addEventListener('click',reset);
 $('restartBtn').addEventListener('click',reset);
+
+$('certificateForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const nameInput = $('participantName');
+  if (!nameInput.reportValidity()) return;
+
+  const participant = nameInput.value.trim().replace(/\s+/g, ' ');
+  const status = $('certificateStatus');
+  status.textContent = 'Sertifikat tayyorlanmoqda…';
+
+  try {
+    await document.fonts.ready;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1800;
+    canvas.height = 1273;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas mavjud emas');
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const background = ctx.createLinearGradient(0, 0, width, height);
+    background.addColorStop(0, '#ffffff');
+    background.addColorStop(1, '#f5f2ff');
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.strokeStyle = '#7561e8';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(48, 48, width - 96, height - 96);
+    ctx.strokeStyle = '#d8d0ff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(67, 67, width - 134, height - 134);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#7561e8';
+    ctx.font = '700 34px Manrope, sans-serif';
+    ctx.fillText('✦  PYTECH  ✦', width / 2, 150);
+    ctx.fillStyle = '#858696';
+    ctx.font = '600 19px "DM Sans", sans-serif';
+    ctx.fillText('KASB YÖNALIŞI TESTI', width / 2, 197);
+
+    ctx.fillStyle = '#1c1c2b';
+    ctx.font = '800 50px Manrope, sans-serif';
+    ctx.fillText('RAĞBATLANTIRUVÇI SERTIFIKAT', width / 2, 300);
+    ctx.fillStyle = '#6f7081';
+    ctx.font = '400 25px "DM Sans", sans-serif';
+    ctx.fillText('Sörovnomada qatnaşganingiz uçun rahmat!', width / 2, 367);
+
+    ctx.fillStyle = '#7561e8';
+    ctx.font = '800 68px Manrope, sans-serif';
+    const nameWidth = ctx.measureText(participant).width;
+    if (nameWidth > 1390) ctx.font = `800 ${Math.max(38, Math.floor(68 * 1390 / nameWidth))}px Manrope, sans-serif`;
+    ctx.fillText(participant, width / 2, 475, 1450);
+
+    ctx.fillStyle = '#343444';
+    ctx.font = '600 25px "DM Sans", sans-serif';
+    ctx.fillText('Siz uçun eng yaqin raqamli kasblar:', width / 2, 576);
+
+    ctx.textAlign = 'left';
+    ctx.font = '600 23px "DM Sans", sans-serif';
+    latestRanked.slice(0, 3).forEach((role, index) => {
+      const line = `${index + 1}. ${role.name} — ${role.percent}% moslik`;
+      ctx.fillStyle = index === 0 ? '#5e4bce' : '#4d4e60';
+      ctx.fillText(line, 355, 646 + index * 47, 1090);
+    });
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#656678';
+    ctx.font = 'italic 22px "DM Sans", sans-serif';
+    ctx.fillText('Qiziqişingiz va mehnatingiz yangi imkoniyatlar sari yöl oçadi.', width / 2, 860);
+
+    ctx.fillStyle = '#9293a0';
+    ctx.font = '500 19px "DM Sans", sans-serif';
+    ctx.fillText(new Date().toLocaleDateString('uz-UZ', {year:'numeric', month:'long', day:'numeric'}), width / 2, 1030);
+    ctx.fillStyle = '#7561e8';
+    ctx.font = '700 17px Manrope, sans-serif';
+    ctx.fillText('PYTECH  ·  KASB TANLOVI', width / 2, 1090);
+
+    const png = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('PNG yaratilmadi')), 'image/png'));
+    const url = URL.createObjectURL(png);
+    const link = document.createElement('a');
+    const filename = participant.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'ishtirokchi';
+    link.href = url;
+    link.download = `pytech-sertifikat-${filename}.png`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status.textContent = 'Sertifikat PNG körinişida yuklab olindi. Omad tilaymiz!';
+  } catch (error) {
+    status.textContent = 'Sertifikatni tayyorlaşda xatolik yüz berdi. Qayta urinib köring.';
+  }
+});
