@@ -21,6 +21,22 @@ const roles = [
   {id:'assistant',name:'Masofaviy yordamçi',desc:'Internet orqali jadval, yozişma va kundalik işlarni yuritadi',icon:'✧'}
 ];
 
+// Kasblar bir xil 8 ko‘nikma mezoni bilan taqqoslanadi: vizual, ijodiy,
+// til, tahliliy, texnik, muloqot, tartib va tijoriy yo‘nalish.
+const roleProfiles = {
+  frontend:[.35,.10,.02,.15,.25,.03,.08,.02], backend:[.02,.04,.03,.25,.45,.03,.18,.00],
+  data:[.02,.02,.08,.40,.25,.05,.10,.08], ai:[.02,.08,.03,.36,.40,.03,.08,.00],
+  ux:[.38,.16,.05,.18,.05,.10,.04,.04], cyber:[.02,.02,.02,.38,.40,.03,.13,.00],
+  devops:[.02,.03,.02,.22,.45,.03,.22,.01], product:[.02,.06,.07,.16,.07,.25,.18,.19],
+  video:[.18,.36,.06,.04,.20,.05,.06,.05], smm:[.10,.20,.13,.14,.04,.16,.05,.18],
+  graphic:[.48,.20,.07,.04,.10,.03,.03,.05], copy:[.03,.18,.48,.10,.02,.10,.03,.16],
+  content:[.14,.25,.20,.07,.04,.17,.04,.15], qa:[.03,.05,.04,.38,.30,.04,.25,.02],
+  seo:[.03,.04,.17,.32,.17,.06,.06,.26], motion:[.30,.34,.03,.05,.23,.02,.02,.12],
+  noCode:[.20,.10,.05,.15,.34,.04,.10,.13], teacher:[.04,.12,.27,.10,.07,.25,.10,.16],
+  ecommerce:[.03,.05,.06,.20,.06,.18,.15,.38], assistant:[.02,.05,.20,.10,.05,.25,.27,.17]
+};
+const profileDimensions = 8;
+
 const q = (text, options) => ({text, options});
 // Tanlov mos kasbga 2, yaqin kasbga 1 ball beradi.
 const pick = (label, primary, adjacent) => ({label, scores:{[primary]:2,...(adjacent ? {[adjacent]:1} : {})}});
@@ -73,15 +89,21 @@ function renderQuestion() {
 }
 function showResults() {
   quizView.classList.add('hidden'); resultsView.classList.remove('hidden'); footer.classList.remove('hidden');
-  const points = Object.fromEntries(roles.map(role => [role.id,0]));
+  const interestProfile = Array(profileDimensions).fill(0);
   answers.forEach((answerIndex, questionIndex) => {
     if(answerIndex === null) return;
     const scores = questions[questionIndex].options[answerIndex].scores;
-    Object.entries(scores).forEach(([id,value]) => points[id] += value);
+    Object.entries(scores).forEach(([id,value]) => {
+      roleProfiles[id].forEach((weight,dimension) => interestProfile[dimension] += weight * value);
+    });
   });
+  const interestMagnitude = Math.hypot(...interestProfile);
   const ranked = roles.map(role => {
-    const possible = questions.reduce((total,question) => total + Math.max(...question.options.map(option => option.scores[role.id] || 0)),0);
-    return {...role,percent:possible ? Math.round(points[role.id]/possible*100) : 0};
+    const profile = roleProfiles[role.id];
+    const profileMagnitude = Math.hypot(...profile);
+    const dotProduct = profile.reduce((sum,weight,dimension) => sum + weight * interestProfile[dimension],0);
+    const similarity = interestMagnitude && profileMagnitude ? dotProduct / (interestMagnitude * profileMagnitude) : 0;
+    return {...role,percent:Math.round(similarity * 100)};
   }).sort((a,b)=>b.percent-a.percent);
   latestRanked = ranked;
   $('resultsList').replaceChildren(...ranked.map((role,index) => {
@@ -90,7 +112,10 @@ function showResults() {
     return row;
   }));
   $('insightTitle').textContent = ranked[0].name;
-  $('insightText').textContent = `${ranked[0].name} javoblaringizga eng mos keldi. ${ranked[1].name} ham siz uchun munosib variant bo‘lishi mumkin.`;
+  const lead = ranked[0].percent - ranked[1].percent;
+  $('insightText').textContent = lead < 4
+    ? `${ranked[0].name} va ${ranked[1].name} sizning qiziqishlaringizga yaqin chiqdi. Ikkala yo‘nalishni ham kichik amaliy loyiha bilan sinab ko‘ring.`
+    : `${ranked[0].name} javoblaringizga eng yaqin yo‘nalish bo‘ldi. ${ranked[1].name} ham ko‘rib chiqishga arziydi.`;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function reset() { current=0; answers=Array(questions.length).fill(null); resultsView.classList.add('hidden');quizView.classList.add('hidden');hero.classList.remove('hidden');how.classList.remove('hidden');footer.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'}); }
@@ -99,12 +124,47 @@ $('backBtn').addEventListener('click',()=>{if(current>0){current--;renderQuestio
 $('exitBtn').addEventListener('click',reset);
 $('restartBtn').addEventListener('click',reset);
 
+function drawWrappedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2) {
+  const words = text.split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(candidate).width > maxWidth) {
+      lines.push(line);
+      line = word;
+    } else line = candidate;
+  }
+  if (line) lines.push(line);
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+    let last = lines[maxLines - 1];
+    while (last && ctx.measureText(`${last}…`).width > maxWidth) last = last.slice(0, -1);
+    lines[maxLines - 1] = `${last.trimEnd()}…`;
+  }
+  lines.forEach((textLine,index) => ctx.fillText(textLine,x,y+index*lineHeight,maxWidth));
+}
+
+function drawCertificateStar(ctx,cx,cy,outerRadius,innerRadius,color) {
+  ctx.beginPath();
+  for (let point=0;point<10;point++) {
+    const radius = point%2===0 ? outerRadius : innerRadius;
+    const angle = -Math.PI/2 + point*Math.PI/5;
+    const x = cx + Math.cos(angle)*radius;
+    const y = cy + Math.sin(angle)*radius;
+    if (point===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
 $('certificateForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const nameInput = $('participantName');
-  if (!nameInput.reportValidity()) return;
-
   const participant = nameInput.value.trim().replace(/\s+/g, ' ');
+  nameInput.setCustomValidity(participant ? '' : 'Ism-familiyangizni kiriting.');
+  if (!nameInput.reportValidity()) return;
   const status = $('certificateStatus');
   status.textContent = 'Sertifikat tayyorlanmoqda…';
 
@@ -118,64 +178,138 @@ $('certificateForm').addEventListener('submit', async (event) => {
 
     const width = canvas.width;
     const height = canvas.height;
-    const background = ctx.createLinearGradient(0, 0, width, height);
-    background.addColorStop(0, '#ffffff');
-    background.addColorStop(1, '#f5f2ff');
-    ctx.fillStyle = background;
-    ctx.fillRect(0, 0, width, height);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const paper = ctx.createLinearGradient(0,0,width,height);
+    paper.addColorStop(0,'#fffefa');
+    paper.addColorStop(.55,'#fbfaf6');
+    paper.addColorStop(1,'#f3f0e7');
+    ctx.fillStyle = paper;
+    ctx.fillRect(0,0,width,height);
 
-    ctx.strokeStyle = '#7561e8';
-    ctx.lineWidth = 5;
-    ctx.strokeRect(48, 48, width - 96, height - 96);
-    ctx.strokeStyle = '#d8d0ff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(67, 67, width - 134, height - 134);
+    ctx.fillStyle = '#5b4ac3';
+    ctx.fillRect(0,0,20,height);
+    ctx.strokeStyle = '#b89a5b';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(42,42,width-84,height-84);
+    ctx.strokeStyle = '#e0d5ba';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(56,56,width-112,height-112);
+
+    const watermark = ctx.createRadialGradient(1440,560,10,1440,560,430);
+    watermark.addColorStop(0,'rgba(117,97,232,.075)');
+    watermark.addColorStop(1,'rgba(117,97,232,0)');
+    ctx.fillStyle = watermark;
+    ctx.fillRect(990,120,700,740);
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#7561e8';
-    ctx.font = '700 34px Manrope, sans-serif';
-    ctx.fillText('✦  PYTECH  ✦', width / 2, 150);
-    ctx.fillStyle = '#858696';
-    ctx.font = '600 19px "DM Sans", sans-serif';
-    ctx.fillText('KASB YÖNALIŞI TESTI', width / 2, 197);
+    ctx.fillStyle = '#252940';
+    ctx.font = '800 30px Manrope, sans-serif';
+    ctx.fillText('PYTECH',width/2,137);
+    ctx.fillStyle = '#8b7954';
+    ctx.font = '600 15px "DM Sans", sans-serif';
+    ctx.fillText('KASB TANLOVI  ·  RAQAMLI KELAJAK SARI',width/2,169);
+    drawCertificateStar(ctx,140,146,15,7,'#b89a5b');
+    drawCertificateStar(ctx,width-140,146,15,7,'#b89a5b');
 
-    ctx.fillStyle = '#1c1c2b';
-    ctx.font = '800 50px Manrope, sans-serif';
-    ctx.fillText('RAĞBATLANTIRUVÇI SERTIFIKAT', width / 2, 300);
-    ctx.fillStyle = '#6f7081';
-    ctx.font = '400 25px "DM Sans", sans-serif';
-    ctx.fillText('Sörovnomada qatnaşganingiz uçun rahmat!', width / 2, 367);
+    ctx.fillStyle = '#252940';
+    ctx.font = '800 48px Manrope, sans-serif';
+    ctx.fillText('KASB YÖNALIŞI',width/2,250);
+    ctx.fillStyle = '#5b4ac3';
+    ctx.font = '700 25px Manrope, sans-serif';
+    ctx.fillText('IŞTIROK SERTIFIKATI',width/2,300);
+    ctx.fillStyle = '#666879';
+    ctx.font = '400 22px "DM Sans", sans-serif';
+    ctx.fillText('Sörovnomada qatnaşganingiz uçun rahmat!',width/2,354);
 
-    ctx.fillStyle = '#7561e8';
-    ctx.font = '800 68px Manrope, sans-serif';
+    ctx.fillStyle = '#252940';
+    ctx.font = '800 64px Manrope, sans-serif';
     const nameWidth = ctx.measureText(participant).width;
-    if (nameWidth > 1390) ctx.font = `800 ${Math.max(38, Math.floor(68 * 1390 / nameWidth))}px Manrope, sans-serif`;
-    ctx.fillText(participant, width / 2, 475, 1450);
+    if (nameWidth > 1390) ctx.font = `800 ${Math.max(38,Math.floor(64*1390/nameWidth))}px Manrope, sans-serif`;
+    ctx.fillText(participant,width/2,442,1450);
+    ctx.strokeStyle = '#b89a5b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(610,493);
+    ctx.lineTo(1190,493);
+    ctx.stroke();
+    ctx.fillStyle = '#747586';
+    ctx.font = '400 19px "DM Sans", sans-serif';
+    ctx.fillText('Qiziqişlaringizni kaşf etganingiz va yangi yönalişlarga qadam',width/2,530);
+    ctx.fillText('qöyganingiz uçun sizni tabriklaymiz.',width/2,558);
 
-    ctx.fillStyle = '#343444';
-    ctx.font = '600 25px "DM Sans", sans-serif';
-    ctx.fillText('Siz uçun eng yaqin raqamli kasblar:', width / 2, 576);
+    ctx.fillStyle = '#8b7954';
+    ctx.font = '700 15px "DM Sans", sans-serif';
+    ctx.fillText('JAVOBLARINGIZGA ENG MOS KELGAN KASBLAR',width/2,624);
 
-    ctx.textAlign = 'left';
-    ctx.font = '600 23px "DM Sans", sans-serif';
-    latestRanked.slice(0, 3).forEach((role, index) => {
-      const line = `${index + 1}. ${role.name} — ${role.percent}% moslik`;
-      ctx.fillStyle = index === 0 ? '#5e4bce' : '#4d4e60';
-      ctx.fillText(line, 355, 646 + index * 47, 1090);
+    const cards = latestRanked.slice(0,3);
+    const cardWidth = 480;
+    const cardHeight = 246;
+    const cardGap = 48;
+    const cardStart = (width-(cardWidth*3+cardGap*2))/2;
+    cards.forEach((role,index) => {
+      const x = cardStart + index*(cardWidth+cardGap);
+      const y = 662;
+      ctx.beginPath();
+      ctx.roundRect(x,y,cardWidth,cardHeight,15);
+      ctx.fillStyle = index===0 ? '#f3f0ff' : '#fffefa';
+      ctx.fill();
+      ctx.strokeStyle = index===0 ? '#b6a9ed' : '#e4dfd1';
+      ctx.lineWidth = index===0 ? 2 : 1;
+      ctx.stroke();
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = index===0 ? '#5b4ac3' : '#9a8a68';
+      ctx.font = '800 17px Manrope, sans-serif';
+      ctx.fillText(`0${index+1}`,x+24,y+29);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#292a3b';
+      ctx.font = '700 25px Manrope, sans-serif';
+      drawWrappedText(ctx,role.name,x+cardWidth/2,y+72,cardWidth-46,31,2);
+      ctx.fillStyle = '#777889';
+      ctx.font = '400 15px "DM Sans", sans-serif';
+      drawWrappedText(ctx,role.desc,x+cardWidth/2,y+133,cardWidth-52,21,2);
+      ctx.fillStyle = index===0 ? '#5b4ac3' : '#4b4c5b';
+      ctx.font = '800 31px Manrope, sans-serif';
+      ctx.fillText(`${role.percent}%`,x+cardWidth/2,y+189);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#e4e0ee';
+      ctx.beginPath();
+      ctx.roundRect(x+32,y+218,cardWidth-64,7,4);
+      ctx.fill();
+      ctx.fillStyle = index===0 ? '#7561e8' : '#b89a5b';
+      ctx.beginPath();
+      ctx.roundRect(x+32,y+218,(cardWidth-64)*role.percent/100,7,4);
+      ctx.fill();
     });
 
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#656678';
-    ctx.font = 'italic 22px "DM Sans", sans-serif';
-    ctx.fillText('Qiziqişingiz va mehnatingiz yangi imkoniyatlar sari yöl oçadi.', width / 2, 860);
+    ctx.fillStyle = '#353648';
+    ctx.font = '600 20px "DM Sans", sans-serif';
+    ctx.fillText('Har bir yangi könikma — kelajakka qöyilgan dadil qadam.',width/2,967);
+    ctx.fillStyle = '#7c7d8a';
+    ctx.font = '400 15px "DM Sans", sans-serif';
+    ctx.fillText('Moslik körsatkiçlari test javoblariga asoslangan taxminiy yönalişdir.',width/2,1002);
 
-    ctx.fillStyle = '#9293a0';
-    ctx.font = '500 19px "DM Sans", sans-serif';
-    ctx.fillText(new Date().toLocaleDateString('uz-UZ', {year:'numeric', month:'long', day:'numeric'}), width / 2, 1030);
-    ctx.fillStyle = '#7561e8';
-    ctx.font = '700 17px Manrope, sans-serif';
-    ctx.fillText('PYTECH  ·  KASB TANLOVI', width / 2, 1090);
+    ctx.strokeStyle = '#ded8c8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(130,1050);
+    ctx.lineTo(width-130,1050);
+    ctx.stroke();
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#666879';
+    ctx.font = '500 16px "DM Sans", sans-serif';
+    ctx.fillText(new Date().toLocaleDateString('uz-UZ',{year:'numeric',month:'long',day:'numeric'}),150,1092);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#252940';
+    ctx.font = '700 16px Manrope, sans-serif';
+    ctx.fillText('PYTECH  ·  KASB TANLOVI',width-150,1092);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#9999a2';
+    ctx.font = '400 13px "DM Sans", sans-serif';
+    ctx.fillText('Motivatsion ishtirok sertifikati. Kasbiy malaka hujjati hisoblanmaydi.',width/2,1148);
 
     const png = await new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('PNG yaratilmadi')), 'image/png'));
     const url = URL.createObjectURL(png);
