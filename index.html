@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <meta name="description" content="15 ta savol orqali sizga mos raqamli kasblarni aniqlang.">
+  <title>Pytech kasb yönalişi — raqamli kasbingizni toping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Career Compass boş sahifa"><span class="brand-mark">✳</span><span>career<span class="brand-dot">.</span>pyteç</span></a>
+    <div class="top-note"><span class="live-dot"></span> Raqamli kelajagingiz şu yerdan boşlanadi</div>
+    <a class="top-link" href="#how">Test qanday işlaydi <span>↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>✦</span> QIZIQIŞ VA KASB TANLOVI TESTI</div>
+        <h1>Öz yölingizni<br><em>toping.</em></h1>
+        <p class="hero-lead">Qiziqişlaringiz va hayot tarzingizga mos zamonaviy raqamli kasblarni aniqlang. Uydan turib işlaş mumkin bölgan yönalişlar ham bor.</p>
+        <div class="hero-meta"><span><b>15</b> ta savol</span><i></i><span><b>5</b> daqiqa</span><i></i><span><b>20</b> ta kasb</span></div>
+        <button class="primary-btn" id="startBtn">Testni boşlaş <span>→</span></button>
+        <div class="privacy-note"><span>◈</span> Javoblaringiz saqlanmaydi. Natijangiz faqat siz uçun.</div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="art-card card-back"><span class="mini-label">SIZNING YÖLINGIZ</span><div class="mini-bars"><i></i><i></i><i></i></div></div>
+        <div class="art-card card-front"><div class="profile-icon">⌘</div><div class="card-label">SIZGA MOS YÖNALIŞ</div><div class="card-role">Raqamli<br>dizayner</div><div class="match-row"><span>Moslik darajasi</span><b>92%</b></div><div class="match-line"><i></i></div></div>
+        <div class="floating-tag tag-top"><span class="tag-emoji">✳</span><span><b>15 ta savol</b><small>qisqa va aniq</small></span></div>
+        <div class="floating-tag tag-bottom"><span class="tag-emoji purple">↗</span><span><b>Natijalar</b><small>moslik böyiça saralangan</small></span></div>
+        <div class="spark spark-a">✦</div><div class="spark spark-b">✧</div>
+      </div>
+    </section>
+
+    <section class="how" id="how">
+      <div class="section-heading"><div><div class="eyebrow muted">SODDA. TEZ. FOYDALI.</div><h2>Uç qadamda <em>aniqlik.</em></h2></div><p>Töğri kasb tanlaş katta qaror. Birinçi qadamni bugun qöying.</p></div>
+      <div class="steps">
+        <article class="step"><div class="step-num">01 <span>↗</span></div><div class="step-icon lilac">☷</div><h3>Savollarga javob bering</h3><p>Özingizga yaqin variantni tanlang. Bu yerda notöğri javob yöq.</p></article>
+        <article class="step"><div class="step-num">02 <span>↗</span></div><div class="step-icon mint">◉</div><h3>Natijangizni köring</h3><p>Javoblaringiz tahlil qilinib, yönalişlar moslik foizi bilan saralanadi.</p></article>
+        <article class="step"><div class="step-num">03 <span>↗</span></div><div class="step-icon peach">✦</div><h3>Öz yölingizni boşlang</h3><p>Sizga mos kasblar va ular haqida qisqa ma’lumot bilan tanişing.</p></article>
+      </div>
+    </section>
+
+    <section class="quiz-view hidden" id="quizView" aria-live="polite">
+      <div class="quiz-shell"><div class="quiz-top"><button class="back-btn" id="backBtn">← <span>Ortga</span></button><div class="quiz-counter"><b id="currentNum">01</b> <span>/ 15</span></div><button class="exit-btn" id="exitBtn">Testdan çiqiş <span>×</span></button></div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="question-area"><div class="question-kicker">SIZNING QIZIQIŞLARINGIZ</div><h2 id="questionText"></h2><p class="question-hint">Sizga eng yaqin javobni tanlang</p><div class="answers" id="answers"></div><div class="quiz-foot"><span>Javobingizga qarab keyingi savol oçiladi</span><span><b id="footNum">01</b> / 15</span></div></div>
+      </div>
+    </section>
+
+    <section class="results-view hidden" id="resultsView">
+      <div class="results-head"><div><div class="eyebrow">SIZNING NATIJANGIZ</div><h2>Sizga mos <em>kasblar.</em></h2><p>Javoblaringiz asosida 20 ta raqamli kasb moslik darajasi böyiça saralandi.</p></div><div class="result-stamp"><span>✦</span><b>P Y T E C H<br>KASB TANLOVI</b></div></div>
+      <div class="results-grid"><div class="ranking-panel"><div class="panel-top"><span>MOS KASBLAR</span><span>MOSLIK</span></div><div id="resultsList"></div></div><aside class="insight-panel"><div class="insight-icon">✳</div><div class="eyebrow muted">SIZ UÇUN</div><h3 id="insightTitle">Ajoyib boşlaniş!</h3><p id="insightText">Natijangizga qarab örganişni boşlang.</p><div class="insight-divider"></div><div class="insight-note"><span>⌁</span><p>Uydan yoki moslaşuvçan vaqtda işlaş imkoniyati kasb va iş beruvçiga qarab farq qiladi. Har bir yönalişni kiçik loyiha bilan sinab köring.</p></div><button class="primary-btn full-btn" id="restartBtn">Testni qayta işlaş <span>↻</span></button></aside></div>
+    </section>
+  </main>
+  <footer><a class="brand" href="#"><span class="brand-mark">✳</span><span>career<span class="brand-dot">.</span>pytech</span></a><span>Kelajagingizni özingiz tanlang.</span><span>© 2026 Pytech</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
